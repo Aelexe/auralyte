@@ -1,0 +1,21 @@
+{
+  "Author": "Aelexe",
+  "Name": "Auralyte",
+  "Punchline": "Customizable icon graphics",
+  "Description": "A plugin for displaying customisable icon graphics to indicate game information.",
+  "IconUrl": "",
+  "ImageUrls": [
+    ""
+  ],
+  "RepoUrl": "",
+  "CategoryTags": [
+    "UI",
+    "utility"
+  ],
+  "InternalName": "Auralyte",
+  "AssemblyVersion": "",
+  "ApplicableVersion": "any",
+  "DalamudApiLevel": 5,
+  "LoadPriority": 0,
+  "Changelog": ""
+}

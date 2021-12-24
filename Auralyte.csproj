@@ -1,0 +1,65 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<AssemblyVersion>0.1</AssemblyVersion>
+		<TargetFramework>net5.0-windows</TargetFramework>
+		<PlatformTarget>x64</PlatformTarget>
+		<Platforms>x64;AnyCPU</Platforms>
+		<LangVersion>9.0</LangVersion>
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+		<UseWindowsForms>true</UseWindowsForms>
+		<ProduceReferenceAssembly>false</ProduceReferenceAssembly>
+		<NoWarn>CA1416</NoWarn>
+		<BaseOutputPath>$(APPDATA)\XIVLauncher\devPlugins</BaseOutputPath>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+	  <CodeAnalysisRuleSet />
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+	  <CodeAnalysisRuleSet />
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+	  <CodeAnalysisRuleSet />
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+	  <CodeAnalysisRuleSet />
+	</PropertyGroup>
+	<ItemGroup>
+	  <None Remove="stylecop.json" />
+	</ItemGroup>
+	<ItemGroup>
+		<Reference Include="Dalamud">
+			<Private>false</Private>
+			<HintPath>$(APPDATA)\XIVLauncher\addon\Hooks\dev\Dalamud.dll</HintPath>
+		</Reference>
+		<Reference Include="Microsoft.CSharp" />
+		<Reference Include="Newtonsoft.Json">
+			<Private>false</Private>
+			<HintPath>$(APPDATA)\XIVLauncher\addon\Hooks\dev\Newtonsoft.Json.dll</HintPath>
+		</Reference>
+		<Reference Include="ImGui.NET">
+			<Private>false</Private>
+			<HintPath>$(APPDATA)\XIVLauncher\addon\Hooks\dev\ImGui.NET.dll</HintPath>
+		</Reference>
+		<Reference Include="ImGuiScene">
+			<Private>false</Private>
+			<HintPath>$(APPDATA)\XIVLauncher\addon\Hooks\dev\ImGuiScene.dll</HintPath>
+		</Reference>
+		<Reference Include="Lumina">
+			<Private>false</Private>
+			<HintPath>$(APPDATA)\XIVLauncher\addon\Hooks\dev\Lumina.dll</HintPath>
+		</Reference>
+		<Reference Include="Lumina.Excel">
+			<Private>false</Private>
+			<HintPath>$(APPDATA)\XIVLauncher\addon\Hooks\dev\Lumina.Excel.dll</HintPath>
+		</Reference>
+		<Reference Include="FFXIVClientStructs">
+			<Private>false</Private>
+			<HintPath>$(APPDATA)\XIVLauncher\addon\Hooks\dev\FFXIVClientStructs.dll</HintPath>
+		</Reference>
+	</ItemGroup>
+	<ItemGroup>
+		<None Update="Auralyte.json">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+	</ItemGroup>
+</Project>
