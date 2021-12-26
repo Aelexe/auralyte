@@ -31,7 +31,11 @@ namespace Auralyte.Game {
         public int maxCharges;
         private bool wasKnown;
 
+        /// <summary>
+        /// Returns whether the spell is known by the player.
+        /// </summary>
         public bool IsKnown() {
+            // Some states override the unknown state. To get around this the last known state is recorded and returned in those situations.
             uint state = Client.GetState((byte)type, id);
 
             switch((SpellState)state) {
@@ -40,6 +44,7 @@ namespace Auralyte.Game {
                     wasKnown = true;
                     return true;
                 case SpellState.Unknown:
+                    wasKnown = false;
                     return false;
                 case SpellState.Busy:
                 case SpellState.Casting:
