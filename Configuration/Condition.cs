@@ -108,7 +108,7 @@ namespace Auralyte.Configuration {
 
                     return isJob;
                 } else if(type2 == (int)Condition.PlayerType.Role) {
-                    bool isRole = Jobs.GetJobById(Auralyte.ClientState.LocalPlayer.ClassJob.Id).IsRole((Role)intValue);
+                    bool isRole = Jobs.GetJobById(Auralyte.ClientState.LocalPlayer.ClassJob.Id)?.IsRole((Role)intValue) ?? false;
 
                     if(logic == (int)Condition.Logic.False) {
                         isRole = !isRole;
