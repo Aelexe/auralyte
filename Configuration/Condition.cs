@@ -13,6 +13,7 @@ namespace Auralyte.Configuration {
         private static Dictionary<int, string> spellTypes;
         private static Dictionary<int, string> statusTypes;
         private static Dictionary<int, string> logicIsTypes;
+        private static Dictionary<int, string> relationLogictypes;
 
         public enum Type {
             Player = 1,
@@ -31,9 +32,13 @@ namespace Auralyte.Configuration {
         public enum StatusType {
             Active,
         }
-        public enum Logic {
+        public enum BooleanLogic {
             True,
             False
+        }
+        public enum RelationLogic {
+            And,
+            Or
         }
 
         public static Dictionary<int, string> GetTypes() {
@@ -69,16 +74,25 @@ namespace Auralyte.Configuration {
         }
         public static Dictionary<int, string> GetLogicIsTypes() {
             if(logicIsTypes == null) {
-                logicIsTypes = Enum.GetValues(typeof(Condition.Logic)).Cast<Condition.Logic>().ToDictionary(t => (int)(object)t, t => t.GetIsName());
+                logicIsTypes = Enum.GetValues(typeof(Condition.BooleanLogic)).Cast<Condition.BooleanLogic>().ToDictionary(t => (int)(object)t, t => t.GetIsName());
             }
 
             return logicIsTypes;
+        }
+
+        public static Dictionary<int, string> GetRelationLogicTypes() {
+            if(relationLogictypes == null) {
+                relationLogictypes = Util.EnumToDictionary<RelationLogic>();
+            }
+
+            return relationLogictypes;
         }
 
         [JsonProperty("id")]            [DefaultValue(-1)]          public int id = -1;
         [JsonProperty("type")]          [DefaultValue(-1)]          public int type = -1;
         [JsonProperty("type2")]         [DefaultValue(-1)]          public int type2 = -1;
         [JsonProperty("logic")]         [DefaultValue(-1)]          public int logic = -1;
+        [JsonProperty("relationLogic")] [DefaultValue(-1)]          public int relationLogic = -1;
         [JsonProperty("value")]         [DefaultValue("")]          public string value = "";
         [JsonProperty("intValue")]      [DefaultValue(-1)]          public int intValue = -1;
         [JsonProperty("uintValue")]     [DefaultValue(0)]           public uint uintValue = 0;
@@ -102,7 +116,7 @@ namespace Auralyte.Configuration {
                 if(type2 == (int)Condition.PlayerType.Job) {
                     bool isJob = Auralyte.ClientState.LocalPlayer.ClassJob.Id == uintValue;
 
-                    if(logic == (int)Condition.Logic.False) {
+                    if(logic == (int)Condition.BooleanLogic.False) {
                         isJob = !isJob;
                     }
 
@@ -110,7 +124,7 @@ namespace Auralyte.Configuration {
                 } else if(type2 == (int)Condition.PlayerType.Role) {
                     bool isRole = Jobs.GetJobById(Auralyte.ClientState.LocalPlayer.ClassJob.Id)?.IsRole((Role)intValue) ?? false;
 
-                    if(logic == (int)Condition.Logic.False) {
+                    if(logic == (int)Condition.BooleanLogic.False) {
                         isRole = !isRole;
                     }
 
@@ -122,7 +136,7 @@ namespace Auralyte.Configuration {
                 if(type2 == (int)Condition.SpellType.Known) {
                     bool isKnown = spell?.IsKnown() ?? false;
 
-                    if(logic == (int)Condition.Logic.False) {
+                    if(logic == (int)Condition.BooleanLogic.False) {
                         isKnown = !isKnown;
                     }
 
@@ -130,7 +144,7 @@ namespace Auralyte.Configuration {
                 } else if(type2 == (int)Condition.SpellType.Cooldown) {
                     bool isOnCooldown = spell?.IsOnCooldown() ?? false;
 
-                    if(logic == (int)Condition.Logic.False) {
+                    if(logic == (int)Condition.BooleanLogic.False) {
                         isOnCooldown = !isOnCooldown;
                     }
 
@@ -146,7 +160,7 @@ namespace Auralyte.Configuration {
                         statusExists = true;
                     }
 
-                    if(logic == (int)Condition.Logic.False) {
+                    if(logic == (int)Condition.BooleanLogic.False) {
                         statusExists = !statusExists;
                     }
 
@@ -203,22 +217,22 @@ namespace Auralyte.Configuration {
             }
         }
 
-        public static string GetIsName(this Condition.Logic logic) {
+        public static string GetIsName(this Condition.BooleanLogic logic) {
             switch(logic) {
-                case Condition.Logic.True:
+                case Condition.BooleanLogic.True:
                     return "is";
-                case Condition.Logic.False:
+                case Condition.BooleanLogic.False:
                     return "is not";
                 default:
                     return "";
             }
         }
 
-        public static string GetDoesName(this Condition.Logic logic) {
+        public static string GetDoesName(this Condition.BooleanLogic logic) {
             switch(logic) {
-                case Condition.Logic.True:
+                case Condition.BooleanLogic.True:
                     return "does";
-                case Condition.Logic.False:
+                case Condition.BooleanLogic.False:
                     return "doesn't";
                 default:
                     return "";

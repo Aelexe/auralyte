@@ -150,10 +150,11 @@ namespace Auralyte.UI {
             List<Condition> conditions = propertySet.conditions;
             Condition conditionToDelete = null;
 
-            ImGui.Columns(2, $"##ps#{propertySet.id}.conditions", false);
+            ImGui.Columns(3, $"##ps#{propertySet.id}.conditions", false);
             float width = ImGui.GetWindowContentRegionWidth();
-            ImGui.SetColumnWidth(0, 30);
-            ImGui.SetColumnWidth(1, width  - 30);
+            ImGui.SetColumnWidth(0, 68);
+            ImGui.SetColumnWidth(1, width - 68 - 60);
+            ImGui.SetColumnWidth(2, 60);
             conditions.ForEach((condition) => {
                 DrawCondition(condition, $"ps#{propertySet.id}");
 
@@ -162,6 +163,7 @@ namespace Auralyte.UI {
                 if(ImGui.Button($"Delete##ps{propertySet.id}.c{condition.id}", new Vector2(BUTTON_WIDTH, 23))) {
                     conditionToDelete = condition;
                 }
+                ImGui.NextColumn();
             });
             ImGui.Columns();
 
@@ -247,7 +249,8 @@ namespace Auralyte.UI {
             if(condition.id == 1) {
                 ImGui.Text("If");
             } else {
-                ImGui.Text("And");
+                ImGui.SetNextItemWidth(CONDITION_RELATION_WIDTH);
+                DrawEnumCombo($"##{parentId}.c#{condition.id}.relation", ref condition.relationLogic, Condition.GetRelationLogicTypes());
             }
             ImGui.NextColumn();
             ImGui.SetNextItemWidth(CONDITION_TYPE_WIDTH);

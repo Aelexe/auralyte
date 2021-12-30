@@ -111,11 +111,28 @@ namespace Auralyte.Configuration {
 
         public void Draw() {
             if(conditions.Count > 0) {
-                for(int i = 0; i < conditions.Count; i++) {
-                    Condition condition = conditions[i];
-                    if(!condition.Check()) {
-                        return;
+                bool conditionsMet = true;
+
+                foreach(Condition condition in conditions) {
+                    if(!conditionsMet) {
+                        if(condition.relationLogic == (int)Condition.RelationLogic.And) {
+                            continue;
+                        } else if(condition.relationLogic == (int)Condition.RelationLogic.Or) {
+                            if(conditionsMet) {
+                                break;
+                            }
+
+                            conditionsMet = true;
+                        }
                     }
+                    
+                    if(!condition.Check()) {
+                        conditionsMet = false;
+                    }
+                }
+
+                if(!conditionsMet) {
+                    return;
                 }
             }
 
@@ -160,8 +177,28 @@ namespace Auralyte.Configuration {
 
             propertySets.ForEach((propertySet) => {
                 // Check property set conditions.
-                foreach(Condition condition in propertySet.conditions) {
-                    if(!condition.Check()) {
+                if(propertySet.conditions.Count > 0) {
+                    bool conditionsMet = true;
+
+                    foreach(Condition condition in propertySet.conditions) {
+                        if(!conditionsMet) {
+                            if(condition.relationLogic == (int)Condition.RelationLogic.And) {
+                                continue;
+                            } else if(condition.relationLogic == (int)Condition.RelationLogic.Or) {
+                                if(conditionsMet) {
+                                    break;
+                                }
+
+                                conditionsMet = true;
+                            }
+                        }
+
+                        if(!condition.Check()) {
+                            conditionsMet = false;
+                        }
+                    }
+
+                    if(!conditionsMet) {
                         return;
                     }
                 }
