@@ -17,52 +17,54 @@ namespace Auralyte.UI {
         public bool open = false;
 #endif
 
-        private readonly AurasUI configsUi = new(ref Auralyte.Config.auras);
-        private AuraUI configUi;
+        private readonly AurasUI rootAurasUi;
+
         public static Aura auraCopy;
         public static Aura auraToDelete;
+        private IPage currentPage;
+
+        public delegate void AuraPageLoader(Aura aura = null);
 
         public PluginUI() {
-            LoadFromConfig();
-        }
-
-        private void LoadFromConfig() {
+            rootAurasUi = new(ref Auralyte.Config.auras, new AuraPageLoader(LoadAuraPage));
+            currentPage = rootAurasUi;
         }
 
         public void Dispose() {
         }
 
-        public void Open() { open = true; }
+        public void Open() {
+            open = true;
+        }
 
-        public void Toggle() { open = !open; }
+        public void Toggle() {
+            open = !open;
+            if(open) {
+                currentPage = rootAurasUi;
+            }
+        }
+
+        private void LoadAuraPage(Aura aura = null) {
+            if(aura != null) {
+                currentPage = new AuraUI(aura, LoadAuraPage);
+            } else {
+                currentPage = rootAurasUi;
+            }
+        }
 
         public void Draw() {
-            if(configsUi.auraUi != null) {
-                configUi = configsUi.auraUi;
-                configsUi.auraUi = null;
-            }
+            if(open && currentPage != null) {
+                ImGui.SetNextWindowSizeConstraints(new Vector2(588, 500), ImGuiHelpers.MainViewport.Size);
+                ImGui.Begin("Auralyte Configuration", ref open);
 
-            if(configUi != null) {
-                configUi.Draw();
-                if(!configUi.open) {
-                    configUi = null;
-                }
-            } else {
-                DrawConfigurationUi();
+                currentPage.Draw();
+
+                ImGui.End();
             }
         }
+    }
 
-        private void DrawConfigurationUi() {
-            if(!open) {
-                return;
-            }
-
-            ImGui.SetNextWindowSizeConstraints(new Vector2(588, 500), ImGuiHelpers.MainViewport.Size);
-            ImGui.Begin("Auralyte Configuration", ref open);
-
-            configsUi.Draw();
-
-            ImGui.End();
-        }
+    public interface IPage : IDisposable {
+        void Draw();
     }
 }

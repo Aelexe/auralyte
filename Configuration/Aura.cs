@@ -19,6 +19,7 @@ namespace Auralyte.Configuration {
         [JsonProperty("position")]      [DefaultValue(null)]            public Vector2 position = Vector2.Zero;
         [JsonProperty("type")]          [DefaultValue(Type.Aura)]       public Type type = Type.Aura;
         [JsonProperty("conditions")]    [DefaultValue(null)]            public List<Condition> conditions = new();
+        [JsonIgnore]                                                    public Aura parentAura { get; set; }
 
         // Aura Configuration
         [JsonProperty("propertySets")] [DefaultValue(null)] public List<PropertySet> propertySets = new();
@@ -29,6 +30,7 @@ namespace Auralyte.Configuration {
         public void Annotate() {
             foreach(Aura aura in auras) {
                 aura.Annotate();
+                aura.parentAura = this;
             }
 
             foreach(PropertySet propertySet in propertySets) {
@@ -76,8 +78,10 @@ namespace Auralyte.Configuration {
 
         public void Reindex() {
             for(int i = 0; i < auras.Count; i++) {
-                auras[i].id = i + 1;
-                auras[i].Reindex();
+                Aura childAura = auras[i];
+                childAura.id = i + 1;
+                childAura.parentAura = this;
+                childAura.Reindex();
             }
 
             for(int i = 0; i < propertySets.Count; i++) {

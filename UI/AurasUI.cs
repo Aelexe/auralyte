@@ -4,23 +4,26 @@ using ImGuiNET;
 using System;
 using System.Collections.Generic;
 using System.Numerics;
+using static Auralyte.UI.PluginUI;
 
 namespace Auralyte.UI {
 
     /// <summary>
     /// Configuration user interface for a list of auras.
     /// </summary>
-    public class AurasUI : IDisposable {
+    public class AurasUI : IPage {
         private readonly List<Aura> auras;
+        public IPage parentPage { get; set; }
 
         // State
         public float width;
         public bool open = true;
 
-        public AuraUI auraUi;
+        private AuraPageLoader LoadAuraPage;
 
-        public AurasUI(ref List<Aura> configs) {
-            this.auras = configs;
+        public AurasUI(ref List<Aura> auras, AuraPageLoader loadPage) {
+            this.auras = auras;
+            this.LoadAuraPage = loadPage;
         }
 
         public void Draw() {
@@ -42,7 +45,6 @@ namespace Auralyte.UI {
             ImGui.Separator();
             Aura toShiftUp = null;
             Aura toShiftDown = null;
-            Aura toEdit = null;
             Aura toDelete = null;
 
             foreach(Aura aura in auras) {
@@ -68,7 +70,8 @@ namespace Auralyte.UI {
                 ImGui.SameLine();
                 ImGui.PushFont(UiBuilder.IconFont);
                 if(ImGui.Button($"{FontAwesomeIcon.PencilAlt.ToIconString()}##Config{aura.id}")) {
-                    toEdit = aura;
+                    Auralyte.Config.Save();
+                    LoadAuraPage(aura);
                 }
                 ImGui.PopFont();
                 ImGuiEx.SetItemTooltip("Left click to edit.\nRight click to copy.", ImGuiHoveredFlags.None);
@@ -101,7 +104,7 @@ namespace Auralyte.UI {
                     auras.Remove(toShiftUp);
                     auras.Insert(index - 1, toShiftUp);
                 }
-                Auralyte.Config.Reindex();
+
                 Auralyte.Config.Save();
             }
             if(toShiftDown != null) {
@@ -110,17 +113,12 @@ namespace Auralyte.UI {
                     auras.Remove(toShiftDown);
                     auras.Insert(index + 1, toShiftDown);
                 }
-                Auralyte.Config.Reindex();
-                Auralyte.Config.Save();
-            } else if(toEdit != null) {
-                auraUi = new AuraUI(ref toEdit);
 
                 Auralyte.Config.Save();
             } else if(toDelete != null) {
                 if(toDelete == PluginUI.auraToDelete) {
                     auras.Remove(toDelete);
 
-                    Auralyte.Config.Reindex();
                     Auralyte.Config.Save();
                 }
                 PluginUI.auraToDelete = null;
@@ -131,8 +129,8 @@ namespace Auralyte.UI {
             if(ImGui.Button("Create##Aura", new Vector2(ImGui.GetColumnWidth() - (ImGui.GetStyle().ItemSpacing.X * 2), ImGui.GetFrameHeight()))) {
                 Aura newAura = new() { id = auras.Count + 1, name = "", position = Vector2.Zero };
                 auras.Add(newAura);
-                auraUi = new AuraUI(ref newAura);
                 Auralyte.Config.Save();
+                LoadAuraPage(newAura);
             }
             ImGuiEx.SetItemTooltip("Left click to create.\nRight click to create from copy.", ImGuiHoveredFlags.None);
             if(ImGui.IsItemHovered()) {
@@ -140,11 +138,10 @@ namespace Auralyte.UI {
                     if(PluginUI.auraCopy != null) {
                         Aura newAura = PluginUI.auraCopy;
                         PluginUI.auraCopy = null;
-
                         newAura.id = auras.Count + 1;
                         auras.Add(newAura);
-                        auraUi = new AuraUI(ref newAura);
                         Auralyte.Config.Save();
+                        LoadAuraPage(newAura);
                     }
                 }
             };

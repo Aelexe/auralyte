@@ -6,99 +6,80 @@ using Auralyte.Game;
 using System;
 using System.Collections.Generic;
 using Auralyte.Configuration;
+using static Auralyte.UI.PluginUI;
 
 namespace Auralyte.UI {
 
     /// <summary>
     /// Configuration user interface for an aura.
     /// </summary>
-    public class AuraUI : IDisposable {
+    public class AuraUI : IPage {
         private static readonly float BUTTON_WIDTH = 110;
         private static readonly float WINDOW_INDENT = 30;
+        private static readonly float CONDITION_RELATION_WIDTH = 60;
         private static readonly float CONDITION_TYPE_WIDTH = 80;
         private static readonly float CONDITION_TYPE2_WIDTH = 100;
         private static readonly float CONDITION_LOGIC_WIDTH = 60;
 
-        private readonly Aura config;
+        private readonly Aura aura;
         private AurasUI aurasUi;
-        private AuraUI configUi;
 
         // State
         public float width;
-        public bool open = true;
 
-        public AuraUI(ref Aura config) {
-            this.config = config;
+        private AuraPageLoader LoadAuraPage;
+
+        public AuraUI(Aura aura, AuraPageLoader loadPage) {
+            this.aura = aura;
+            this.LoadAuraPage = loadPage;
         }
 
         public void Dispose() {
         }
 
         public void Draw() {
-            // If an aura from the aura list has been selected for editing, take the UI reference.
-            if(aurasUi?.auraUi != null) {
-                configUi = aurasUi.auraUi;
-                aurasUi.auraUi = null;
-            }
-
-            // If a child aura is being editteds, draw the UI for it instead.
-            if(configUi != null) {
-                configUi.Draw();
-                if(!configUi.open) {
-                    Auralyte.Config.Save();
-                    configUi = null;
-                }
-            } else {
-                DrawUi();
-            }
-        }
-
-        public void DrawUi() {
             width = ImGui.GetWindowWidth();
-
-            ImGui.SetNextWindowSizeConstraints(new Vector2(588, 500), ImGuiHelpers.MainViewport.Size);
-            ImGui.Begin($"{Auralyte.GetName()} Aura Editor", ref open);
             ImGui.Columns(2, "Whatever", false);
             ImGui.SetColumnWidth(0, width * 0.1f);
             ImGui.SetColumnWidth(1, width * 0.5f);
 
             ImGui.Text("ID");
             ImGui.NextColumn();
-            ImGui.Text($"{(config.id >= 0 ? $"#{config.id}" : "N/A")}");
+            ImGui.Text($"{(aura.id >= 0 ? $"#{aura.id}" : "N/A")}");
             ImGui.NextColumn();
 
             ImGui.Text("Name");
             ImGui.NextColumn();
-            ImGui.InputText("", ref config.name, 32);
+            ImGui.InputText("", ref aura.name, 32);
             ImGui.NextColumn();
 
             ImGui.Text("Position");
             ImGui.NextColumn();
             ImGui.PushItemWidth(ImGui.GetColumnWidth() / 3 - 8);
-            ImGui.InputFloat($"##config{config.id} x", ref config.position.X, 0, 0, "%g");
+            ImGui.InputFloat($"##config{aura.id} x", ref aura.position.X, 0, 0, "%g");
             ImGui.SameLine();
-            ImGui.InputFloat($"##config{config.id} y", ref config.position.Y, 0, 0, "%g");
+            ImGui.InputFloat($"##config{aura.id} y", ref aura.position.Y, 0, 0, "%g");
             ImGui.PopItemWidth();
             ImGui.NextColumn();
 
             ImGui.Columns(1);
             ImGui.Text("Type");
-            if(ImGui.RadioButton("Aura", config.type == Aura.Type.Aura)) {
-                config.type = Aura.Type.Aura;
+            if(ImGui.RadioButton("Aura", aura.type == Aura.Type.Aura)) {
+                aura.type = Aura.Type.Aura;
             }
             ImGui.SameLine();
-            if(ImGui.RadioButton("Group", config.type == Aura.Type.Group)) {
-                config.type = Aura.Type.Group;
+            if(ImGui.RadioButton("Group", aura.type == Aura.Type.Group)) {
+                aura.type = Aura.Type.Group;
             }
 
             ImGui.Separator();
 
             ImGui.BeginTabBar("Aura Tabs", ImGuiTabBarFlags.AutoSelectNewTabs);
 
-            if(config.type == Aura.Type.Aura) {
+            if(aura.type == Aura.Type.Aura) {
                 DrawPropertiesTab();
-            } else if(config.type == Aura.Type.Group) {
-                DrawConfigsTab();
+            } else if(aura.type == Aura.Type.Group) {
+                DrawAurasTab();
             }
 
             DrawConditionsTab();
@@ -108,19 +89,15 @@ namespace Auralyte.UI {
 
             ImGui.SetCursorPosX(ImGui.GetWindowContentRegionWidth() - BUTTON_WIDTH);
             if(ImGui.Button("Save", new Vector2(BUTTON_WIDTH, 23))) {
-                // Save the configuration.
                 Auralyte.Config.Save();
 
-                // Close the dialog.
-                open = false;
+                LoadAuraPage(aura.parentAura);
             }
-
-            ImGui.End();
         }
 
         private void DrawPropertiesTab() {
-            if(ImGui.BeginTabItem($"Properties##{config.id}")) {
-                List<PropertySet> propertySets = config.propertySets;
+            if(ImGui.BeginTabItem($"Properties##{aura.id}")) {
+                List<PropertySet> propertySets = aura.propertySets;
 
                 PropertySet toDelete = null;
 
@@ -132,7 +109,7 @@ namespace Auralyte.UI {
 
                 if(toDelete != null) {
                     propertySets.Remove(toDelete);
-                    config.Reindex();
+                    aura.Reindex();
                 }
 
                 ImGui.SetCursorPosX(ImGui.GetWindowContentRegionWidth() - BUTTON_WIDTH);
@@ -370,12 +347,12 @@ namespace Auralyte.UI {
             ImGui.NextColumn();
         }
 
-        private void DrawConfigsTab() {
+        private void DrawAurasTab() {
             if(aurasUi == null) {
-                aurasUi = new AurasUI(ref config.auras);
+                aurasUi = new AurasUI(ref aura.auras, LoadAuraPage);
             }
 
-            if(ImGui.BeginTabItem($"Auras##{config.id}")) {
+            if(ImGui.BeginTabItem($"Auras##{aura.id}")) {
                 aurasUi.Draw();
 
                 ImGui.EndTabItem();
@@ -383,27 +360,27 @@ namespace Auralyte.UI {
         }
 
         private void DrawConditionsTab() {
-            if(ImGui.BeginTabItem($"Conditions##{config.id}")) {
-                List<Condition> conditions = config.conditions;
+            if(ImGui.BeginTabItem($"Conditions##{aura.id}")) {
+                List<Condition> conditions = aura.conditions;
                 Condition conditionToDelete = null;
 
                 conditions.ForEach((condition) => {
-                    DrawCondition(condition, $"conf#{config.id}");
+                    DrawCondition(condition, $"conf#{aura.id}");
 
                     ImGui.SameLine();
                     ImGui.SetCursorPosX(ImGui.GetWindowContentRegionWidth() - BUTTON_WIDTH);
-                    if(ImGui.Button($"Delete##conf{config.id}.c{condition.id}", new Vector2(BUTTON_WIDTH, 23))) {
+                    if(ImGui.Button($"Delete##conf{aura.id}.c{condition.id}", new Vector2(BUTTON_WIDTH, 23))) {
                         conditionToDelete = condition;
                     }
                 });
 
                 if(conditionToDelete != null) {
                     conditions.Remove(conditionToDelete);
-                    config.Reindex();
+                    aura.Reindex();
                 }
 
                 ImGui.SetCursorPosX(WINDOW_INDENT);
-                if(ImGui.Button($"Add Condition##conf{config.id}", new Vector2(BUTTON_WIDTH, 23))) {
+                if(ImGui.Button($"Add Condition##conf{aura.id}", new Vector2(BUTTON_WIDTH, 23))) {
                     Condition newCondition = new() { id = conditions.Count + 1 };
                     conditions.Add(newCondition);
                 }
