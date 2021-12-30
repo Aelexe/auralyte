@@ -88,10 +88,23 @@ namespace Auralyte.Game {
             return (int)Math.Floor(GetElapsedCooldown() / cooldownPerCharge);
         }
 
+        /// <summary>
+        /// Gets the max charges for a spell. This method contains overrides for spells that gain charges at higher levels.
+        /// </summary>
+        /// <returns></returns>
         public int GetMaxCharges() {
             int level = Auralyte.ClientState.LocalPlayer.Level;
 
-            if(id == 3614) {
+            // Tanks
+            // Gunbreaker
+            if(id == 16151) { // Aurora
+                if(level >= 84) {
+                    return 2;
+                }
+            }
+            // Heals
+            // Astrologian
+            else if(id == 3614) { // Essential Dignity
                 if(level >= 78) {
                     return 2;
                 }
